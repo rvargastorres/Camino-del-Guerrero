@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impecabilidad: El Camino del Guerrero</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                    },
+                    colors: {
+                        gold: {
+                            50: '#fffdf5',
+                            100: '#fef7da',
+                            400: '#f6d365',
+                            500: '#d9a71a',
+                            600: '#b8860b',
+                        },
+                        shadow: '#0d0f14'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0b0f17;
+            background-image: radial-gradient(circle at 50% 0%, #151e33 0%, #0b0f17 70%);
+            background-attachment: fixed;
+        }
+        /* Glassmorphism utility */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #f6d365 0%, #d9a71a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f17;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen pb-12 antialiased">
+
+    <script>
+        // Default app state to store in LocalStorage for persistence
+        const DEFAULT_STATE = {
+            checklist: [
+                { id: 'chk_silence', label: '¿Practiqué la mirada periférica al sentir diálogo mental?', completed: false, category: 'Silencio' },
+                { id: 'chk_protection', label: '¿Evité engancharme ante el drama o la prisa ajena?', completed: false, category: 'Protección' },
+                { id: 'chk_impeccability', label: '¿Realicé al menos una tarea con atención total y pulcritud?', completed: false, category: 'Impecabilidad' },
+                { id: 'chk_detachment', label: '¿Solté la necesidad de control sobre el resultado final?', completed: false, category: 'Desapego' },
+                { id: 'chk_folly', label: '¿Usé mis obligaciones como un tablero de juego artificial?', completed: false, category: 'Desatino' }
+            ],
+            practices: [
+                { id: 'prc_visual', title: 'La Pausa Periférica', duration: '30s', description: 'Desenfoca tu mirada y expande tu atención hacia los lados. Congela el diálogo interno al instante.', core: true },
+                { id: 'prc_shield', title: 'El Escudo del Espejo', duration: '1m', description: 'Cuando sientas presión ajena, respira lento, observa sin reaccionar y mantén tu pantalla interna limpia.', core: true },
+                { id: 'prc_touch', title: 'El Toque de Pulcritud', duration: '2m', description: 'Elige un objeto desordenado de tu entorno y ordénalo con extrema pulcritud y simetría.', core: true }
+            ],
+            log: [
+                { id: 'log_init', date: new Date().toLocaleDateString('es-ES'), title: 'El Despertar del Guerrero', content: 'Hoy inicio mi práctica de impecabilidad. Declaro mis tareas diarias como mi laboratorio de templanza y mi ofrenda al Intento.' }
+            ],
+            energyScore: 0
+        };
+
+        // Load or initialize state
+        let appState = JSON.parse(localStorage.getItem('toltec_warrior_state'));
+        if (!appState) {
+            appState = DEFAULT_STATE;
+            localStorage.setItem('toltec_warrior_state', JSON.stringify(appState));
+        }
+
+        // Save State helper
+        function saveState() {
+            localStorage.setItem('toltec_warrior_state', JSON.stringify(appState));
+            updateEnergyMeter();
+        }
+    </script>
+
+    <div class="max-w-6xl mx-auto px-4 pt-8">
+        <!-- Top App Bar -->
+        <header class="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 pb-6 border-b border-slate-800/60">
+            <div class="flex items-center gap-3">
+                <div class="h-12 w-12 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center shadow-lg shadow-amber-500/10">
+                    <svg class="w-6 h-6 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="font-serif text-2xl font-bold tracking-tight md:text-3xl text-gradient">IMPECABILIDAD</h1>
+                    <p class="text-xs text-slate-400 tracking-wider uppercase">El Camino del Guerrero Tolteca</p>
+                </div>
+            </div>
+
+            <!-- Energy Alignment Meter -->
+            <div class="w-full md:w-72 bg-slate-800/40 p-3 rounded-xl border border-slate-700/50 flex flex-col gap-1.5 glass-panel">
+                <div class="flex justify-between text-xs">
+                    <span class="text-slate-400 font-medium">Alineación Energética Diario</span>
+                    <span id="energy-percentage" class="text-amber-400 font-bold">0%</span>
+                </div>
+                <div class="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden">
+                    <div id="energy-progress-bar" class="h-full bg-gradient-to-r from-amber-500 to-emerald-500 transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Workspace: Tab Navigation -->
+        <div class="flex border-b border-slate-800/80 mb-8 overflow-x-auto whitespace-nowrap gap-2" id="nav-tabs">
+            <button onclick="switchTab('sendero')" id="tab-sendero" class="tab-btn active px-6 py-3 text-sm font-medium border-b-2 border-amber-400 text-amber-400 transition-colors flex items-center gap-2">
+                <i class="fa-solid fa-compass"></i> El Sendero
+            </button>
+            <button onclick="switchTab('alineacion')" id="tab-alineacion" class="tab-btn px-6 py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-colors flex items-center gap-2">
+                <i class="fa-solid fa-circle-check"></i> Alineación Diaria
+            </button>
+            <button onclick="switchTab('practicas')" id="tab-practicas" class="tab-btn px-6 py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-colors flex items-center gap-2">
+                <i class="fa-solid fa-fire"></i> Entrenador & Prácticas
+            </button>
+            <button onclick="switchTab('bitacora')" id="tab-bitacora" class="tab-btn px-6 py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-colors flex items-center gap-2">
+                <i class="fa-solid fa-book-open"></i> Bitácora del Acechador
+            </button>
+        </div>
+
+        <!-- ==================== TAB: EL SENDERO (WISDOM CORE) ==================== -->
+        <section id="content-sendero" class="tab-content block animate-fadeIn">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Wisdom Banner Card -->
+                <div class="md:col-span-3 glass-panel p-6 rounded-2xl border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden relative">
+                    <div class="absolute right-0 top-0 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl -z-10"></div>
+                    <div class="flex-1">
+                        <span class="text-xs font-bold text-amber-500 tracking-wider uppercase mb-1 block">Acecho Práctico</span>
+                        <h2 class="font-serif text-xl md:text-2xl font-bold mb-2">"No hay más que un camino para el guerrero: la impecabilidad."</h2>
+                        <p class="text-slate-400 text-sm max-w-2xl">
+                            Usa tu realidad de hoy como tu laboratorio de templanza. La gente que te rodea, las prisas y tus negocios no son una carga; son oponentes de práctica diseñados para medir tu impecabilidad ante el infinito.
+                        </p>
+                    </div>
+                    <button onclick="switchTab('alineacion')" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl shadow-lg shadow-amber-500/10 transition-all text-sm shrink-0">
+                        Comenzar Alineación Diaria
+                    </button>
+                </div>
+
+                <!-- Card 1: El Volador -->
+                <div class="glass-panel p-6 rounded-2xl hover:border-slate-700/50 transition-all flex flex-col justify-between group">
+                    <div>
+                        <div class="h-10 w-10 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400 mb-4">
+                            <i class="fa-solid fa-ghost"></i>
+                        </div>
+                        <h3 class="font-semibold text-lg mb-2">El Parásito (Volador)</h3>
+                        <p class="text-sm text-slate-400 leading-relaxed mb-4">
+                            Una instalación mental foránea que genera de forma continua dudas, egocentrismo, quejas y pánico a perder. El parásito se alimenta de las llamaradas de tus crisis banales.
+                        </p>
+                    </div>
+                    <div class="border-t border-slate-800/80 pt-3 flex justify-between items-center">
+                        <span class="text-xs text-slate-500">Antídoto: Silencio Interno</span>
+                        <button onclick="openWisdomModal('volador')" class="text-xs text-amber-500 hover:underline">Ver mapa <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                    </div>
+                </div>
+
+                <!-- Card 2: Impecabilidad -->
+                <div class="glass-panel p-6 rounded-2xl hover:border-slate-700/50 transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="h-10 w-10 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400 mb-4">
+                            <i class="fa-solid fa-sun"></i>
+                        </div>
+                        <h3 class="font-semibold text-lg mb-2">Impecabilidad</h3>
+                        <p class="text-sm text-slate-400 leading-relaxed mb-4">
+                            Unificar cuerpo y atención en lo que haces ahora. Actuar con pulcritud técnica y soltar por completo la obsesión por los resultados o la opinión ajena. El acto puro es tu ofrenda.
+                        </p>
+                    </div>
+                    <div class="border-t border-slate-800/80 pt-3 flex justify-between items-center">
+                        <span class="text-xs text-slate-500">Antídoto: Acto con Intento</span>
+                        <button onclick="openWisdomModal('impecabilidad')" class="text-xs text-amber-500 hover:underline">Ver mapa <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                    </div>
+                </div>
+
+                <!-- Card 3: Desatino Controlado -->
+                <div class="glass-panel p-6 rounded-2xl hover:border-slate-700/50 transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 mb-4">
+                            <i class="fa-solid fa-mask"></i>
+                        </div>
+                        <h3 class="font-semibold text-lg mb-2">Desatino Controlado</h3>
+                        <p class="text-sm text-slate-400 leading-relaxed mb-4">
+                            Actuar como el actor perfecto: con absoluto entusiasmo hacia afuera para disolver conflictos, pero manteniendo un desapego y vacío de cristal en tu interior.
+                        </p>
+                    </div>
+                    <div class="border-t border-slate-800/80 pt-3 flex justify-between items-center">
+                        <span class="text-xs text-slate-500">Antídoto: Actuar el Rol</span>
+                        <button onclick="openWisdomModal('desatino')" class="text-xs text-amber-500 hover:underline">Ver mapa <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB: ALINEACIÓN DIARIA (CHECKLIST) ==================== -->
+        <section id="content-alineacion" class="tab-content hidden animate-fadeIn">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Checklist Panel -->
+                <div class="lg:col-span-2 glass-panel p-6 rounded-2xl border border-slate-800">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 class="font-serif text-xl font-bold">Estado de Alineación</h2>
+                            <p class="text-xs text-slate-400">Verifica tus acciones impecables del día para acumular energía.</p>
+                        </div>
+                        <button onclick="openAddChecklistItemModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 rounded-xl flex items-center gap-2 text-xs font-semibold transition-all">
+                            <i class="fa-solid fa-plus"></i> Enriquecer Práctica
+                        </button>
+                    </div>
+
+                    <!-- Checklist container -->
+                    <div class="flex flex-col gap-4" id="checklist-container">
+                        <!-- Checklist dynamic rendering here -->
+                    </div>
+                </div>
+
+                <!-- Side Helper Panel -->
+                <div class="flex flex-col gap-6">
+                    <div class="glass-panel p-6 rounded-2xl border border-slate-800">
+                        <h3 class="font-serif text-lg font-bold mb-3 flex items-center gap-2 text-amber-400">
+                            <i class="fa-solid fa-triangle-exclamation"></i> Alerta de Fuga
+                        </h3>
+                        <p class="text-sm text-slate-400 leading-relaxed">
+                            Si te sientes cansado, deprimido o enfadado, el parásito ha encontrado una filtración de <strong>Importancia Personal</strong>. El checklist te ayuda a ver qué canal estás descuidando. Usa las prácticas de inmediato.
+                        </p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl border border-slate-800 bg-gradient-to-br from-amber-500/5 to-transparent">
+                        <h3 class="font-serif text-lg font-bold mb-2 text-amber-300">Ofrenda de Energía</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed mb-4">
+                            Los chamanes toltecas no actúan para acumular aplausos, sino para dejar una huella limpia de impecabilidad sobre la faz de la Tierra. Tu checklist es tu contrato personal con tu propia energía.
+                        </p>
+                        <button onclick="resetDailyChecklist()" class="w-full py-2 bg-slate-950/60 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs text-slate-400 hover:text-slate-200 rounded-lg transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-rotate"></i> Resetear Día
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB: PRÁCTICAS & ENTRENADOR ==================== -->
+        <section id="content-practicas" class="tab-content hidden animate-fadeIn">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Silence Focus Trainer -->
+                <div class="lg:col-span-2 glass-panel p-6 rounded-2xl border border-slate-800 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <h2 class="font-serif text-xl font-bold">Asistente de Silencio Interno</h2>
+                                <p class="text-xs text-slate-400">Usa la Mirada Periférica para congelar la instalación foránea.</p>
+                            </div>
+                            <span class="px-2.5 py-1 rounded bg-amber-500/10 text-amber-400 text-[10px] font-bold tracking-wider uppercase">Enfoque 30s</span>
+                        </div>
+
+                        <!-- Interactive Focus Visual Area -->
+                        <div class="relative w-full h-64 rounded-xl bg-slate-950/80 border border-slate-800 flex flex-col items-center justify-center overflow-hidden mb-6">
+                            <!-- Visual Ring Pulsating during trainer -->
+                            <div id="trainer-ring" class="absolute w-24 h-24 rounded-full border border-amber-500/20 flex items-center justify-center transition-all duration-1000">
+                                <div class="w-16 h-16 rounded-full border-2 border-dashed border-amber-400/10 flex items-center justify-center">
+                                    <div class="w-4 h-4 rounded-full bg-amber-400 shadow-lg shadow-amber-400/50"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Expandable lines visually pointing left/right to aid peripheral focus -->
+                            <div class="absolute left-6 text-slate-600 text-xl font-bold transition-all" id="left-focus-marker">◀</div>
+                            <div class="absolute right-6 text-slate-600 text-xl font-bold transition-all" id="right-focus-marker">▶</div>
+
+                            <!-- Timer Display -->
+                            <div id="trainer-timer-display" class="font-serif text-4xl font-bold mb-2 tracking-tight">00:30</div>
+                            <p id="trainer-instruction" class="text-xs text-slate-400 max-w-sm text-center px-4">
+                                Desenfoca la mirada. Enfócate simultáneamente en las dos flechas laterales (◀ y ▶) sin mover tus ojos del centro dorado.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <button id="btn-start-trainer" onclick="startFocusTrainer()" class="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl transition-all shadow-lg shadow-amber-500/10 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-play"></i> Iniciar Práctica
+                        </button>
+                        <button id="btn-reset-trainer" onclick="resetFocusTrainer()" class="px-5 py-3 bg-slate-800 border border-slate-700/60 hover:bg-slate-700 text-slate-300 rounded-xl transition-all flex items-center justify-center">
+                            <i class="fa-solid fa-stop"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Active Practices & Add Practice Box -->
+                <div class="flex flex-col gap-6">
+                    <div class="glass-panel p-6 rounded-2xl border border-slate-800 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="font-serif text-lg font-bold">Tus Prácticas</h3>
+                                <button onclick="openAddPracticeModal()" class="h-8 w-8 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 flex items-center justify-center text-amber-400 text-sm transition-all">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                            </div>
+                            <div class="flex flex-col gap-3 max-h-[290px] overflow-y-auto pr-1" id="practices-list">
+                                <!-- Dynamic Practices Render -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB: BITÁCORA DEL ACECHADOR ==================== -->
+        <section id="content-bitacora" class="tab-content hidden animate-fadeIn">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Log Entry Creator -->
+                <div class="glass-panel p-6 rounded-2xl border border-slate-800">
+                    <h2 class="font-serif text-xl font-bold mb-2">Registrar Acecho</h2>
+                    <p class="text-xs text-slate-400 mb-6">Usa este espejo escrito para medir tus bloqueos, victorias y debilidades diarias de forma honesta.</p>
+
+                    <form id="bitacora-form" onsubmit="addLogEntry(event)" class="flex flex-col gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Título de la Entrada</label>
+                            <input id="log-title" type="text" placeholder="Ej: Negociando con el Desatino" required class="w-full bg-slate-950/60 border border-slate-800 focus:border-amber-500/60 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Tu Observación (Honestidad Brutal)</label>
+                            <textarea id="log-content" rows="6" placeholder="Escribe aquí de qué se dio cuenta tu observador hoy... ¿Cerraste la fuga de energía? ¿Cómo respondiste ante el oponente?" required class="w-full bg-slate-950/60 border border-slate-800 focus:border-amber-500/60 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none transition-all resize-none"></textarea>
+                        </div>
+
+                        <!-- Template helpers -->
+                        <div class="bg-slate-950/40 p-3 rounded-xl border border-slate-900 flex flex-col gap-1.5">
+                            <span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Estructura del Guerrero:</span>
+                            <div class="flex flex-wrap gap-1.5">
+                                <button type="button" onclick="insertPrompt(1)" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-750 text-[10px] text-slate-400">1. ¿Qué fuga identifiqué?</button>
+                                <button type="button" onclick="insertPrompt(2)" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-750 text-[10px] text-slate-400">2. ¿Cómo jugué el desatino?</button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-sm shadow-lg shadow-amber-500/10">
+                            <i class="fa-solid fa-feather"></i> Guardar en Bitácora
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Saved Logs List -->
+                <div class="lg:col-span-2 flex flex-col gap-4">
+                    <h3 class="font-serif text-lg font-bold text-slate-200">Bitácora de Observaciones</h3>
+                    <div class="flex flex-col gap-4 max-h-[500px] overflow-y-auto pr-1" id="logs-container">
+                        <!-- Dynamic Logs Renders -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ==================== MODALS & DIALOGS ==================== -->
+    
+    <!-- Wisdom Card Modal -->
+    <div id="wisdom-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel w-full max-w-lg rounded-2xl border border-slate-800 p-6 relative animate-zoomIn">
+            <button onclick="closeWisdomModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-100 text-lg transition-all">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div id="wisdom-modal-content">
+                <!-- Inner details dynamic loaded -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Checklist Item Modal -->
+    <div id="add-checklist-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel w-full max-w-md rounded-2xl border border-slate-800 p-6 relative">
+            <button onclick="closeAddChecklistItemModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-100 text-lg transition-all">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="font-serif text-xl font-bold mb-2 text-gradient">Enriquecer la Práctica</h3>
+            <p class="text-xs text-slate-400 mb-6">Añade un hábito energético o un desafío diario adaptado a tu trabajo y entorno.</p>
+            
+            <div class="flex flex-col gap-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Nombre de la Práctica o Reto</label>
+                    <input id="new-check-label" type="text" placeholder="Ej: ¿Sostuve la serenidad al escribirle al cliente?" class="w-full bg-slate-950 border border-slate-800 focus:border-amber-500/60 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Categoría</label>
+                    <select id="new-check-category" class="w-full bg-slate-950 border border-slate-800 focus:border-amber-500/60 rounded-xl px-4 py-2.5 text-sm text-slate-400 focus:outline-none">
+                        <option value="Silencio">Silencio Interno</option>
+                        <option value="Protección">Protección Energética</option>
+                        <option value="Impecabilidad">Impecabilidad</option>
+                        <option value="Desapego">Desapego total</option>
+                        <option value="Desatino">Desatino Controlado</option>
+                    </select>
+                </div>
+                <button onclick="addChecklistItem()" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-sm mt-2">
+                    Añadir al Checklist Diario
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Custom Practice Modal -->
+    <div id="add-practice-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel w-full max-w-md rounded-2xl border border-slate-800 p-6 relative">
+            <button onclick="closeAddPracticeModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-100 text-lg transition-all">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="font-serif text-xl font-bold mb-2 text-gradient">Nueva Técnica Personal</h3>
+            <p class="text-xs text-slate-400 mb-6">Incorpora una micro-técnica de alineación o hack mental a tu arsenal.</p>
+            
+            <div class="flex flex-col gap-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Título de la Técnica</label>
+                    <input id="new-practice-title" type="text" placeholder="Ej: Respiración del Guerrero" class="w-full bg-slate-950 border border-slate-800 focus:border-amber-500/60 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Duración Sugerida</label>
+                    <input id="new-practice-duration" type="text" placeholder="Ej: 2m o 30s" class="w-full bg-slate-950 border border-slate-800 focus:border-amber-500/60 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Descripción del Proceso</label>
+                    <textarea id="new-practice-desc" rows="3" placeholder="Describe brevemente qué debes hacer con tu cuerpo y mente..." class="w-full bg-slate-950 border border-slate-800 focus:border-amber-500/60 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none resize-none"></textarea>
+                </div>
+                <button onclick="addPracticeItem()" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-sm mt-2">
+                    Añadir Técnica
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==================== WEB APP JAVASCRIPT LOGIC ==================== -->
+    <script>
+        // Core Tab System Switch
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-amber-400', 'text-amber-400');
+                btn.classList.add('border-transparent', 'text-slate-400');
+            });
+
+            document.getElementById(`content-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            activeBtn.classList.remove('border-transparent', 'text-slate-400');
+            activeBtn.classList.add('border-amber-400', 'text-amber-400');
+        }
+
+        // ==================== CHECKLIST LOGIC ====================
+        function renderChecklist() {
+            const container = document.getElementById('checklist-container');
+            container.innerHTML = '';
+            
+            appState.checklist.forEach(item => {
+                const categoryClasses = {
+                    'Silencio': 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+                    'Protección': 'bg-red-500/10 text-red-400 border-red-500/20',
+                    'Impecabilidad': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+                    'Desapego': 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+                    'Desatino': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+                };
+                const tagColor = categoryClasses[item.category] || 'bg-slate-800 text-slate-400';
+
+                const div = document.createElement('div');
+                div.className = `flex items-center justify-between p-4 rounded-xl border ${item.completed ? 'border-amber-500/20 bg-amber-500/[0.02]' : 'border-slate-800 bg-slate-950/20'} transition-all`;
+                
+                div.innerHTML = `
+                    <div class="flex items-center gap-4 flex-1 mr-4">
+                        <button onclick="toggleCheck(${item.id ? `'${item.id}'` : ''})" class="h-6 w-6 rounded-md border ${item.completed ? 'border-amber-500 bg-amber-500 text-slate-950' : 'border-slate-700 hover:border-amber-500/50'} flex items-center justify-center transition-all shrink-0">
+                            ${item.completed ? '<i class="fa-solid fa-check text-xs font-black"></i>' : ''}
+                        </button>
+                        <span class="text-sm ${item.completed ? 'text-slate-400 line-through' : 'text-slate-200'}">${item.label}</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="px-2.5 py-1 rounded-md text-[10px] font-bold border ${tagColor}">${item.category}</span>
+                        ${item.core ? '' : `<button onclick="deleteChecklistItem('${item.id}')" class="text-slate-600 hover:text-red-400 transition-all"><i class="fa-solid fa-trash-can text-sm"></i></button>`}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            updateEnergyMeter();
+        }
+
+        function toggleCheck(id) {
+            const item = appState.checklist.find(i => i.id === id);
+            if (item) {
+                item.completed = !item.completed;
+                saveState();
+                renderChecklist();
+            }
+        }
+
+        function openAddChecklistItemModal() {
+            document.getElementById('add-checklist-modal').classList.remove('hidden');
+        }
+
+        function closeAddChecklistItemModal() {
+            document.getElementById('add-checklist-modal').classList.add('hidden');
+        }
+
+        function addChecklistItem() {
+            const labelInput = document.getElementById('new-check-label');
+            const catSelect = document.getElementById('new-check-category');
+            
+            if (labelInput.value.trim() === '') return;
+
+            const newItem = {
+                id: 'chk_' + Date.now(),
+                label: labelInput.value.trim(),
+                completed: false,
+                category: catSelect.value,
+                core: false
+            };
+
+            appState.checklist.push(newItem);
+            saveState();
+            renderChecklist();
+            closeAddChecklistItemModal();
+            labelInput.value = '';
+        }
+
+        function deleteChecklistItem(id) {
+            appState.checklist = appState.checklist.filter(item => item.id !== id);
+            saveState();
+            renderChecklist();
+        }
+
+        function resetDailyChecklist() {
+            appState.checklist.forEach(item => item.completed = false);
+            saveState();
+            renderChecklist();
+        }
+
+        // ==================== ENERGY METER UPDATE ====================
+        function updateEnergyMeter() {
+            const total = appState.checklist.length;
+            const completed = appState.checklist.filter(i => i.completed).length;
+            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+            
+            document.getElementById('energy-percentage').innerText = `${percentage}%`;
+            document.getElementById('energy-progress-bar').style.width = `${percentage}%`;
+            appState.energyScore = percentage;
+        }
+
+        // ==================== PRACTICE TIMER & FOCUS WORKSPACE ====================
+        let timerInterval = null;
+        let originalSeconds = 30;
+        let secondsLeft = 30;
+
+        function startFocusTrainer() {
+            if (timerInterval) return;
+
+            // Visual enhancements during practice
+            const leftFocus = document.getElementById('left-focus-marker');
+            const rightFocus = document.getElementById('right-focus-marker');
+            const ring = document.getElementById('trainer-ring');
+            const btn = document.getElementById('btn-start-trainer');
+
+            leftFocus.classList.add('text-amber-400', 'scale-150', 'animate-pulse');
+            rightFocus.classList.add('text-amber-400', 'scale-150', 'animate-pulse');
+            ring.classList.add('scale-125', 'border-amber-400/40');
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Entrenando Silencio';
+            btn.classList.replace('bg-amber-500', 'bg-slate-800');
+            btn.classList.add('text-amber-400');
+
+            timerInterval = setInterval(() => {
+                secondsLeft--;
+                updateTrainerDisplay();
+                if (secondsLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    completeTrainer();
+                }
+            }, 1000);
+        }
+
+        function completeTrainer() {
+            alert("Práctica de Silencio Interno completada. Siente el vacío de tu mente. Tu capa de conciencia se ha ensanchado un milímetro. La instalación mental foránea ha sido desconectada temporalmente.");
+            resetFocusTrainer();
+        }
+
+        function resetFocusTrainer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            secondsLeft = originalSeconds;
+            updateTrainerDisplay();
+
+            const leftFocus = document.getElementById('left-focus-marker');
+            const rightFocus = document.getElementById('right-focus-marker');
+            const ring = document.getElementById('trainer-ring');
+            const btn = document.getElementById('btn-start-trainer');
+
+            leftFocus.className = 'absolute left-6 text-slate-600 text-xl font-bold transition-all';
+            rightFocus.className = 'absolute right-6 text-slate-600 text-xl font-bold transition-all';
+            ring.className = 'absolute w-24 h-24 rounded-full border border-amber-500/20 flex items-center justify-center transition-all duration-1000';
+            btn.innerHTML = '<i class="fa-solid fa-play"></i> Iniciar Práctica';
+            btn.classList.replace('bg-slate-800', 'bg-amber-500');
+            btn.classList.remove('text-amber-400');
+        }
+
+        function updateTrainerDisplay() {
+            const minutes = Math.floor(secondsLeft / 60);
+            const seconds = secondsLeft % 60;
+            document.getElementById('trainer-timer-display').innerText = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // ==================== CUSTOM PRACTICES LOGIC ====================
+        function renderPractices() {
+            const list = document.getElementById('practices-list');
+            list.innerHTML = '';
+
+            appState.practices.forEach(prc => {
+                const div = document.createElement('div');
+                div.className = 'bg-slate-950/40 p-4 rounded-xl border border-slate-900 flex flex-col justify-between gap-3';
+                div.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-bold text-sm text-slate-200">${prc.title}</span>
+                            <span class="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded bg-slate-800 text-amber-400">${prc.duration}</span>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">${prc.description}</p>
+                    </div>
+                    <div class="flex justify-between items-center border-t border-slate-900 pt-2 text-[10px]">
+                        <span class="text-slate-500">${prc.core ? 'Técnica Tolteca' : 'Técnica Personal'}</span>
+                        ${prc.core ? '' : `<button onclick="deletePractice('${prc.id}')" class="text-slate-600 hover:text-red-400 transition-all"><i class="fa-solid fa-trash-can text-sm"></i></button>`}
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function openAddPracticeModal() {
+            document.getElementById('add-practice-modal').classList.remove('hidden');
+        }
+
+        function closeAddPracticeModal() {
+            document.getElementById('add-practice-modal').classList.add('hidden');
+        }
+
+        function addPracticeItem() {
+            const titleInput = document.getElementById('new-practice-title');
+            const durationInput = document.getElementById('new-practice-duration');
+            const descInput = document.getElementById('new-practice-desc');
+
+            if (titleInput.value.trim() === '' || descInput.value.trim() === '') return;
+
+            const newPrc = {
+                id: 'prc_' + Date.now(),
+                title: titleInput.value.trim(),
+                duration: durationInput.value.trim() || 'Libre',
+                description: descInput.value.trim(),
+                core: false
+            };
+
+            appState.practices.push(newPrc);
+            saveState();
+            renderPractices();
+            closeAddPracticeModal();
+            
+            titleInput.value = '';
+            durationInput.value = '';
+            descInput.value = '';
+        }
+
+        function deletePractice(id) {
+            appState.practices = appState.practices.filter(p => p.id !== id);
+            saveState();
+            renderPractices();
+        }
+
+        // ==================== BITÁCORA (JOURNAL LOG) LOGIC ====================
+        function renderLogs() {
+            const container = document.getElementById('logs-container');
+            container.innerHTML = '';
+
+            appState.log.forEach(entry => {
+                const div = document.createElement('div');
+                div.className = 'glass-panel p-5 rounded-xl border border-slate-800/80 hover:border-slate-700/60 transition-all relative';
+                div.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <span class="text-[10px] text-amber-500 font-bold tracking-wider block mb-0.5">${entry.date}</span>
+                            <h4 class="font-serif text-base font-bold text-slate-100">${entry.title}</h4>
+                        </div>
+                        <button onclick="deleteLogEntry('${entry.id}')" class="text-slate-600 hover:text-red-400 transition-all"><i class="fa-solid fa-trash-can text-sm"></i></button>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-relaxed whitespace-pre-wrap">${entry.content}</p>
+                `;
+                container.prepend(div); // Newest entries first
+            });
+        }
+
+        function addLogEntry(e) {
+            e.preventDefault();
+            const titleInput = document.getElementById('log-title');
+            const contentInput = document.getElementById('log-content');
+
+            if (titleInput.value.trim() === '' || contentInput.value.trim() === '') return;
+
+            const newEntry = {
+                id: 'log_' + Date.now(),
+                date: new Date().toLocaleDateString('es-ES'),
+                title: titleInput.value.trim(),
+                content: contentInput.value.trim()
+            };
+
+            appState.log.push(newEntry);
+            saveState();
+            renderLogs();
+
+            titleInput.value = '';
+            contentInput.value = '';
+        }
+
+        function deleteLogEntry(id) {
+            appState.log = appState.log.filter(entry => entry.id !== id);
+            saveState();
+            renderLogs();
+        }
+
+        function insertPrompt(type) {
+            const textarea = document.getElementById('log-content');
+            let template = "";
+            if (type === 1) {
+                template = "1. ¿Qué fuga identifiqué hoy?: [Describe el enojo, la queja o duda]\n2. ¿Cómo actuó mi observador?: \n3. ¿Qué técnica apliqué para cerrarla?: ";
+            } else if (type === 2) {
+                template = "1. ¿Cuál fue mi campo de batalla de hoy?: [Ej: Reunión, correo de queja, informe molesto]\n2. ¿Cómo jugué el desatino controlado?: \n3. ¿Logré mantener mi interior libre de expectativas?: ";
+            }
+            textarea.value = template;
+            textarea.focus();
+        }
+
+        // ==================== WISDOM KNOWLEDGE OVERLAYS ====================
+        const WISDOM_DATABASE = {
+            volador: {
+                title: "El Volador (El Predador)",
+                subtitle: "El Origen de tus Limitaciones",
+                content: `
+                    <p class="text-sm text-slate-300 mb-4 leading-relaxed">
+                        Los chamanes del México antiguo descubrieron que el ser humano no está en la cima de la cadena alimenticia de la conciencia. Existe un ser inorgánico, un predador, que consume nuestra <strong>capa brillante de conciencia</strong>.
+                    </p>
+                    <p class="text-sm text-slate-300 mb-4 leading-relaxed">
+                        Para mantenernos dóciles y obedientes, el predador nos otorgó <strong>su mente</strong>. Una mente llena de contradicciones, con un miedo inquebrantable a ser descubierta y una obsesión enfermiza por el egocentrismo.
+                    </p>
+                    <div class="bg-red-500/10 p-4 rounded-xl border border-red-500/20 text-xs text-red-400 leading-relaxed">
+                        <strong>¿Cómo detectarlo?:</strong> Cada vez que experimentas autocompasión ("pobre de mí"), orgullo desmesurado, necesidad de criticar a otros o un diálogo interno que se repite como disco rayado, no eres tú: es el parásito alimentándose.
+                    </div>
+                `
+            },
+            impecabilidad: {
+                title: "Impecabilidad",
+                subtitle: "Ahorro y Eficiencia de Energía",
+                content: `
+                    <p class="text-sm text-slate-300 mb-4 leading-relaxed">
+                        Para un guerrero tolteca, la impecabilidad no es una regla de moralidad: es un cálculo de pura eficiencia. Significa usar tu energía sin desperdicio.
+                    </p>
+                    <p class="text-sm text-slate-300 mb-4 leading-relaxed">
+                        La impecabilidad consiste en hacer las cosas de la mejor forma técnica que puedas, sin permitir que tu importancia personal ensucie el acto. Cuando trabajas, enfocas tu cuerpo y energía al 100% en la tarea y liberas por completo la expectativa sobre lo que piensen los demás.
+                    </p>
+                    <div class="bg-amber-500/10 p-4 rounded-xl border border-amber-500/20 text-xs text-amber-400 leading-relaxed">
+                        <strong>El gran truco:</strong> Al actuar impecablemente, tus dos capullos de energía (físico y luminoso) se alinean perfectamente. Esto genera una frecuencia vibratoria tan alta que repele inmediatamente la boca del volador.
+                    </div>
+                `
+            },
+            desatino: {
+                title: "Desatino Controlado",
+                subtitle: "Sobrevivir en el Teatro Humano",
+                content: `
+                    <p class="text-sm text-slate-300 mb-4 leading-relaxed">
+                        Don Juan le enseñó a Castaneda que nada tiene una importancia real o trascendente ante la inmensidad del infinito. Sin embargo, un guerrero no cae en la apatía del ermitaño.
+                    </p>
+                    <p class="text-sm text-slate-300 mb-4 leading-relaxed">
+                        A través del <strong>Desatino Controlado</strong>, eliges conscientemente actuar con máxima pasión por fuera. Si estás en los negocios, actúas el papel del negociador infatigable; si estás con tu familia, el del protector amoroso. Pero por dentro sabes que es un papel diseñado, manteniendo un desapego total del resultado.
+                    </p>
+                    <div class="bg-emerald-500/10 p-4 rounded-xl border border-emerald-500/20 text-xs text-emerald-400 leading-relaxed">
+                        <strong>¿Para qué sirve?:</strong> Te permite operar en el lodo del mercado o en la dificultad social con máxima eficiencia, sin gastar ni un solo gramo de tu energía vital en enganches emocionales.
+                    </div>
+                `
+            }
+        };
+
+        function openWisdomModal(key) {
+            const data = WISDOM_DATABASE[key];
+            if (!data) return;
+
+            const modalContent = document.getElementById('wisdom-modal-content');
+            modalContent.innerHTML = `
+                <span class="text-[10px] text-amber-500 uppercase font-bold tracking-widest block mb-1">${data.subtitle}</span>
+                <h3 class="font-serif text-2xl font-bold mb-4 text-gradient">${data.title}</h3>
+                <div class="mb-6">${data.content}</div>
+                <button onclick="closeWisdomModal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-750 border border-slate-700 rounded-xl text-xs text-slate-200 font-bold transition-all">
+                    Entendido, regresar al camino
+                </button>
+            `;
+            document.getElementById('wisdom-modal').classList.remove('hidden');
+        }
+
+        function closeWisdomModal() {
+            document.getElementById('wisdom-modal').classList.add('hidden');
+        }
+
+
+        // ==================== APP INITIALIZER ====================
+        window.onload = function() {
+            renderChecklist();
+            renderPractices();
+            renderLogs();
+        };
+    </script>
+</body>
+</html>
