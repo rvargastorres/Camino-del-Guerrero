@@ -270,10 +270,10 @@
                     <div>
                         <div class="flex justify-between items-start mb-6">
                             <div>
-                                <h2 class="font-serif text-xl font-bold">Asistente de Silencio Interno</h2>
-                                <p class="text-xs text-slate-400">Usa la Mirada Periférica para congelar la instalación foránea.</p>
+                                <h2 id="trainer-title" class="font-serif text-xl font-bold">Asistente de Silencio Interno</h2>
+                                <p id="trainer-subdesc" class="text-xs text-slate-400">Usa la atención y el silencio para congelar la instalación foránea.</p>
                             </div>
-                            <span class="px-2.5 py-1 rounded bg-amber-500/10 text-amber-400 text-[10px] font-bold tracking-wider uppercase">Enfoque 30s</span>
+                            <span id="trainer-badge" class="px-2.5 py-1 rounded bg-amber-500/10 text-amber-400 text-[10px] font-bold tracking-wider uppercase">Enfoque 30s</span>
                         </div>
 
                         <!-- Interactive Focus Visual Area -->
@@ -311,12 +311,13 @@
                 <div class="flex flex-col gap-6">
                     <div class="glass-panel p-6 rounded-2xl border border-slate-800 flex flex-col justify-between">
                         <div>
-                            <div class="flex justify-between items-center mb-4">
+                            <div class="flex justify-between items-center mb-2">
                                 <h3 class="font-serif text-lg font-bold">Tus Prácticas</h3>
                                 <button onclick="openAddPracticeModal()" class="h-8 w-8 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 flex items-center justify-center text-amber-400 text-sm transition-all">
                                     <i class="fa-solid fa-plus"></i>
                                 </button>
                             </div>
+                            <p class="text-[11px] text-slate-500 mb-3"><i class="fa-solid fa-mouse-pointer mr-1"></i> Haz clic en una técnica para cargarla en el asistente.</p>
                             <div class="flex flex-col gap-3 max-h-[290px] overflow-y-auto pr-1" id="practices-list">
                                 <!-- Dynamic Practices Render -->
                             </div>
@@ -445,6 +446,20 @@
         </div>
     </div>
 
+    <!-- Custom Alert Modal (Replaces unsafe window.alert) -->
+    <div id="custom-alert-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel w-full max-w-md rounded-2xl border border-slate-800 p-6 relative text-center">
+            <div class="h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400 mx-auto mb-4 text-2xl">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h3 id="custom-alert-title" class="font-serif text-xl font-bold mb-2 text-gradient">¡Práctica Completada!</h3>
+            <p id="custom-alert-message" class="text-xs text-slate-400 mb-6 leading-relaxed"></p>
+            <button onclick="closeCustomAlert()" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-sm transition-all shadow-lg shadow-amber-500/10">
+                Aceptar y Guardar Energía
+            </button>
+        </div>
+    </div>
+
 
     <!-- ==================== WEB APP JAVASCRIPT LOGIC ==================== -->
     <script>
@@ -562,6 +577,41 @@
         let timerInterval = null;
         let originalSeconds = 30;
         let secondsLeft = 30;
+        let activePracticeId = 'prc_visual';
+
+        function selectPractice(id) {
+            if (timerInterval) {
+                resetFocusTrainer();
+            }
+            activePracticeId = id;
+            const prc = appState.practices.find(p => p.id === id);
+            if (!prc) return;
+
+            // Update UI elements dynamically based on selected practice
+            document.getElementById('trainer-title').innerText = prc.title;
+            document.getElementById('trainer-instruction').innerText = prc.description;
+            document.getElementById('trainer-badge').innerText = `Enfoque ${prc.duration}`;
+
+            // Parse seconds from duration string
+            originalSeconds = parseDurationToSeconds(prc.duration);
+            secondsLeft = originalSeconds;
+            updateTrainerDisplay();
+
+            // Re-render to refresh selected highlights
+            renderPractices();
+        }
+
+        function parseDurationToSeconds(duration) {
+            if (!duration) return 30;
+            const str = duration.toLowerCase().trim();
+            const minMatch = str.match(/^(\d+)\s*m/);
+            if (minMatch) return parseInt(minMatch[1]) * 60;
+            const secMatch = str.match(/^(\d+)\s*s/);
+            if (secMatch) return parseInt(secMatch[1]);
+            const numMatch = str.match(/^(\d+)$/);
+            if (numMatch) return parseInt(numMatch[1]);
+            return 60; // Fallback default for custom texts such as "Libre"
+        }
 
         function startFocusTrainer() {
             if (timerInterval) return;
@@ -591,8 +641,22 @@
         }
 
         function completeTrainer() {
-            alert("Práctica de Silencio Interno completada. Siente el vacío de tu mente. Tu capa de conciencia se ha ensanchado un milímetro. La instalación mental foránea ha sido desconectada temporalmente.");
+            const prc = appState.practices.find(p => p.id === activePracticeId) || { title: 'Silencio Interno' };
+            showCustomAlert(
+                "¡Práctica Completada!",
+                `Has finalizado con éxito la técnica "${prc.title}". Siente el vacío de tu mente. Tu capa de conciencia se ha ensanchado un milímetro. La instalación mental foránea ha sido desconectada temporalmente.`
+            );
             resetFocusTrainer();
+        }
+
+        function showCustomAlert(title, message) {
+            document.getElementById('custom-alert-title').innerText = title;
+            document.getElementById('custom-alert-message').innerText = message;
+            document.getElementById('custom-alert-modal').classList.remove('hidden');
+        }
+
+        function closeCustomAlert() {
+            document.getElementById('custom-alert-modal').classList.add('hidden');
         }
 
         function resetFocusTrainer() {
@@ -629,19 +693,30 @@
             list.innerHTML = '';
 
             appState.practices.forEach(prc => {
+                const isSelected = prc.id === activePracticeId;
+                const borderClass = isSelected ? 'border-amber-500 bg-amber-500/[0.04]' : 'border-slate-900 bg-slate-950/40';
+                const selectStyle = isSelected ? 'ring-1 ring-amber-500/50 shadow-lg' : 'hover:border-slate-800/80 cursor-pointer';
+
                 const div = document.createElement('div');
-                div.className = 'bg-slate-950/40 p-4 rounded-xl border border-slate-900 flex flex-col justify-between gap-3';
+                div.className = `${borderClass} ${selectStyle} p-4 rounded-xl border flex flex-col justify-between gap-3 transition-all`;
+                
+                // Allow card selection but avoid conflict with clicking the trash/delete button
+                div.onclick = (e) => {
+                    if (e.target.closest('.delete-btn')) return;
+                    selectPractice(prc.id);
+                };
+
                 div.innerHTML = `
                     <div>
                         <div class="flex justify-between items-center mb-1">
-                            <span class="font-bold text-sm text-slate-200">${prc.title}</span>
-                            <span class="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded bg-slate-800 text-amber-400">${prc.duration}</span>
+                            <span class="font-bold text-sm ${isSelected ? 'text-amber-400' : 'text-slate-200'}">${prc.title}</span>
+                            <span class="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded ${isSelected ? 'bg-amber-500/25 text-amber-300' : 'bg-slate-800 text-amber-400'}">${prc.duration}</span>
                         </div>
                         <p class="text-xs text-slate-400 leading-relaxed">${prc.description}</p>
                     </div>
                     <div class="flex justify-between items-center border-t border-slate-900 pt-2 text-[10px]">
                         <span class="text-slate-500">${prc.core ? 'Técnica Tolteca' : 'Técnica Personal'}</span>
-                        ${prc.core ? '' : `<button onclick="deletePractice('${prc.id}')" class="text-slate-600 hover:text-red-400 transition-all"><i class="fa-solid fa-trash-can text-sm"></i></button>`}
+                        ${prc.core ? '' : `<button onclick="deletePractice('${prc.id}')" class="delete-btn text-slate-600 hover:text-red-400 transition-all"><i class="fa-solid fa-trash-can text-sm"></i></button>`}
                     </div>
                 `;
                 list.appendChild(div);
@@ -683,8 +758,12 @@
 
         function deletePractice(id) {
             appState.practices = appState.practices.filter(p => p.id !== id);
+            if (activePracticeId === id) {
+                activePracticeId = 'prc_visual';
+            }
             saveState();
             renderPractices();
+            selectPractice(activePracticeId);
         }
 
         // ==================== BITÁCORA (JOURNAL LOG) LOGIC ====================
@@ -824,6 +903,7 @@
             renderChecklist();
             renderPractices();
             renderLogs();
+            selectPractice(activePracticeId); // Auto-initialize selected practice in trainer
         };
     </script>
 </body>
